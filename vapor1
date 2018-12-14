@@ -24,7 +24,7 @@ notes_high = [:D4,:D4,:D4,:D4,:E4,:C4,:E4,:D4,:D4,:D4,:D4,:D4,:E4,:C4,:C4,:D4]
 define :beats_kick_1 do
   in_thread do
     sync :tempo0
-    if current_compass % 2 != 0 then
+    if current_compass % 2 == 0 then
       sample :bd_tek
     end
   end
@@ -33,7 +33,7 @@ end
 define :beats_snare_1 do
   in_thread do
     sync :tempo0
-    if current_compass % 2 == 0 then
+    if current_compass % 2 != 0 then
       sample :drum_cymbal_closed
       ##| sample :elec_lo_snare, hpf_attack: 0.1
     end
@@ -52,11 +52,15 @@ define :bass do
     half_time = tempo_by_4
     with_fx :eq do |r|
       control r, mix: rand(0.2..0.9)
+      sync :tempo0
+      play note, release: 0.3, cutoff: 60
       sync :tempo25
       play note, release: 0.3, cutoff: 60
       sync :tempo5
       play note, release: 0.3, cutoff: 60
       sync :tempo75
+      play note, release: 0.3, cutoff: 60
+      sync :tempo1
       play note, release: 0.3, cutoff: 60
       sleep half_time
     end
@@ -66,13 +70,13 @@ define :bass do
   ##| MORE BASE
   ##| ------------->
   
-  in_thread do
-    sync :tempo0
-    use_synth :fm
-    if current_compass == 2 || current_compass == 10 then
-      play notes_low[current_compass]
-    end
-  end
+  ##| in_thread do
+  ##|   sync :tempo0
+  ##|   use_synth :fm
+  ##|   if current_compass == 2 || current_compass == 10 then
+  ##|     play notes_low[current_compass]
+  ##|   end
+  ##| end
   
 end
 
@@ -84,7 +88,13 @@ define :turn1 do
       play notes_high[current_compass]
     end
   end
-  
+end
+
+define :vocal1 do
+  in_thread do
+    sync :tempo0
+    synth :sine, note: notes_high[current_compass], amp: 0.2
+  end
 end
 
 define :do_basic_beat do
@@ -115,19 +125,18 @@ end
 
 live_loop :magic do
   sync :tempo0
-  beats_snare_1
-  beats_kick_1
   bass
-  turn1
+  beats_kick_1
+  beats_snare_1
+  ##| turn1
+  vocal1
   ##| dadada
 end
 
 ##| ----------------------------->
-##| | THE LIVE LOOP
+##| THE LIVE LOOP
 ##| ----------------------------->
-
 live_loop :main_loop do
-  
   cue :tempo0
   sleep tempo_by_4
   cue :tempo25
